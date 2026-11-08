@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Biocapteur Optique GOAu-SERS &amp; Deep Learning</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- Chart.js pour la visualisation des spectres Raman -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- FontAwesome pour les icônes -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+
+    <!-- Barre de Navigation -->
+    <header class="navbar">
+        <div class="logo">
+            <i class="fa-solid fa-microscope"></i>
+            <span>BioSensor<b>AI</b></span>
+        </div>
+        <nav>
+            <button type="button" class="nav-btn active" onclick="showTab('simulation')"><i class="fa-solid fa-play"></i> Simulation Interactive</button>
+            <button type="button" class="nav-btn" onclick="showTab('architecture')"><i class="fa-solid fa-sitemap"></i> Architecture &amp; Composants</button>
+            <button type="button" class="nav-btn" onclick="showTab('bioinfo')"><i class="fa-solid fa-dna"></i> Pipeline Bioinformatique</button>
+        </nav>
+    </header>
+
+    <main class="content">
+
+        <!-- ONGLET 1 : SIMULATION INTERACTIVE COMPLÈTE -->
+        <section id="tab-simulation" class="tab-page active">
+            <div class="hero-banner">
+                <h2>Simulateur de Biocapteur Optique SERS GOAu &amp; IA</h2>
+                <p>Détection ultrasensible de la créatinine (LoD 1 pM, Exactitude 98%) pour le diagnostic précoce des maladies rénales chroniques (CKD).</p>
+            </div>
+
+            <!-- Grille Principale de Simulation -->
+            <div class="simulation-grid">
+
+                <!-- Panneau de Contrôle Échantillon -->
+                <div class="card control-card">
+                    <h3><i class="fa-solid fa-sliders"></i> 1. Paramètres de l'Échantillon</h3>
+
+                    <div class="form-group">
+                        <label for="sampleType">Biofluide Cible :</label>
+                        <select id="sampleType" onchange="updateSimulation()">
+                            <option value="urine">Urine Synthétique (Seuil clinique: 44-106 µM)</option>
+                            <option value="serum">Sérum Sanguin</option>
+                            <option value="sweat">Sueur / Salive (Traces pM)</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="concSlider">Concentration de Créatinine : <b id="concDisplay">50 µM</b></label>
+                        <input type="range" id="concSlider" min="0" max="100" value="50" oninput="updateSimulation()">
+                        <div class="range-labels">
+                            <span>1 pM (Traces)</span>
+                            <span>100 µM (Normal)</span>
+                            <span>10 mM (Élevé)</span>
+                        </div>
+                    </div>
+
+                    <button type="button" class="btn-primary" onclick="triggerPulse()"><i class="fa-solid fa-bolt"></i> Impulsion Laser (785 nm)</button>
+
+                    <div class="stats-box">
+                        <div class="stat-item">
+                            <span class="stat-title">Facteur d'Exaltation</span>
+                            <span class="stat-value">1,6 × 10⁵</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-title">Répétabilité (RSD)</span>
+                            <span class="stat-value">7,99 %</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Animation de la Surface du Biocapteur (Canvas) -->
+                <div class="card canvas-card">
+                    <h3><i class="fa-solid fa-atom"></i> 2. Animation de la Surface GOAu (Plasmonique &amp; Molécules)</h3>
+                    <div class="canvas-wrapper">
+                        <canvas id="sensorCanvas"></canvas>
+                        <div class="laser-indicator" id="laserBeam">FAISCEAU LASER 785 nm ACTIVE</div>
+                    </div>
+                    <div class="legend">
+                        <span><i class="dot gold"></i> NP d'Or (~60nm)</span>
+                        <span><i class="dot graphene"></i> Feuille de Graphène (GO)</span>
+                        <span><i class="dot molecule"></i> Créatinine</span>
+                    </div>
+                </div>
+
+                <!-- Visualisation du Spectre Raman (Chart.js) -->
+                <div class="card chart-card">
+                    <h3><i class="fa-solid fa-chart-line"></i> 3. Spectre Raman en Temps Réel (Signal Prétraité)</h3>
+                    <div class="chart-wrapper">
+                        <canvas id="ramanChart"></canvas>
+                    </div>
+                    <div class="peaks-info">
+                        <span class="tag">604 cm⁻¹ (C-H)</span>
+                        <span class="tag">673 cm⁻¹ (N-H)</span>
+                        <span class="tag">836 cm⁻¹ (C-O)</span>
+                        <span class="tag">901 cm⁻¹ (C-C)</span>
+                    </div>
+                </div>
+
+                <!-- Décision de l'IA & Rapport Médical -->
+                <div class="card ai-card">
+                    <h3><i class="fa-solid fa-brain"></i> 4. Diagnostic IA &amp; Médecine de Précision</h3>
+
+                    <div class="neural-vis">
+                        <div class="layer"><span>2048 Inputs</span></div>
+                        <i class="fa-solid fa-arrow-right"></i>
+                        <div class="layer active"><span>512 ReLU</span></div>
+                        <i class="fa-solid fa-arrow-right"></i>
+                        <div class="layer active"><span>256 ReLU</span></div>
+                        <i class="fa-solid fa-arrow-right"></i>
+                        <div class="layer output"><span>Sortie Sigmoïde</span></div>
+                    </div>
+
+                    <div class="diagnostic-result" id="diagBox">
+                        <div class="status-badge normal" id="statusBadge">Fonction Rénale Normale</div>
+                        <p id="diagText">Le réseau de neurones détecte des pics Raman caractéristiques à des niveaux physiologiques sains.</p>
+                        <div class="confidence">Précision de Prédiction : <b>98%</b></div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- ONGLET 2 : ARCHITECTURE & COMPOSANTS -->
+        <section id="tab-architecture" class="tab-page">
+            <div class="hero-banner">
+                <h2>Architecture &amp; Composants du Système</h2>
+                <p>Description détaillée des composants physiques, optiques et algorithmiques du capteur.</p>
+            </div>
+
+            <div class="grid-3">
+                <div class="card">
+                    <div class="card-icon"><i class="fa-solid fa-layer-group"></i></div>
+                    <h3>Substrat GOAu Nanostructuré</h3>
+                    <p><b>Composition :</b> Wafer de Silicium recouvert de nanocomposites d'Oxyde de Graphène (GO) et de Nanoparticules d'Or (AuNPs ~60nm).</p>
+                    <p><b>Fonction :</b> Fournit une amplification plasmonique électromagnétique (AuNPs) et un transfert de charge chimique (GO) amplifiant le signal par 7× par rapport au substrat nu.</p>
+                </div>
+                <div class="card">
+                    <div class="card-icon"><i class="fa-solid fa-bolt"></i></div>
+                    <h3>Source Excitation Laser 785 nm</h3>
+                    <p><b>Spécifications :</b> Laser Proche Infrarouge (785 nm), Puissance de 100 mW, temps d'exposition de 2,5 s.</p>
+                    <p><b>Fonction :</b> Excite les plasmons de surface localisés (LSPR) sans détruire les molécules biologiques ni générer une fluorescence excessive.</p>
+                </div>
+                <div class="card">
+                    <div class="card-icon"><i class="fa-solid fa-network-wired"></i></div>
+                    <h3>Deep Learning (Feedforward NN)</h3>
+                    <p><b>Architecture :</b> 2048 neurones d'entrée &rarr; 512 neurones (ReLU) &rarr; 256 neurones (ReLU) &rarr; Sortie Sigmoïde.</p>
+                    <p><b>Fonction :</b> Automatise la détection, filtre le bruit de fond à ultra-faibles concentrations et atteint une LoD de 1 pM avec 98% d'exactitude.</p>
+                </div>
+            </div>
+            <!-- NOUVEAU BLOC : CHAÎNE D'ACQUISITION PHYSIQUE & NUMÉRIQUE -->
+<!-- CHAÎNE COMPLÈTE D'ACQUISITION & REPRÉSENTATION DES SIGNAUX -->
+<div class="card margin-top">
+    <h3><i class="fa-solid fa-diagram-project"></i> Chaîne Complète d'Acquisition &amp; Traitement (Physique, Numérique &amp; IA)</h3>
+    <p>Visualisation intégrale du signal de l'analyte jusqu'au diagnostic clinique :</p>
+
+    <div class="full-chain-grid">
+
+        <!-- Étape 1 : Analyte -->
+        <div class="chain-card">
+            <span class="step-badge">1</span>
+            <h4>Analyte</h4>
+            <div class="mini-graph visual-analyte"><i class="fa-solid fa-droplet"></i></div>
+            <p>Créatinine (Urine / Sérum)</p>
+        </div>
+
+        <div class="chain-sep"><i class="fa-solid fa-arrow-right"></i></div>
+
+        <!-- Étape 2 : Biocapteur -->
+        <div class="chain-card">
+            <span class="step-badge">2</span>
+            <h4>Biocapteur</h4>
+            <div class="mini-graph visual-sensor"><i class="fa-solid fa-layer-group"></i></div>
+            <p>Substrat GOAu (Graphène + Or)</p>
+        </div>
+
+        <div class="chain-sep"><i class="fa-solid fa-arrow-right"></i></div>
+
+        <!-- Étape 3 : Transducteur Optique -->
+        <div class="chain-card">
+            <span class="step-badge">3</span>
+            <h4>Transducteur</h4>
+            <div class="mini-graph visual-laser"><i class="fa-solid fa-bolt"></i></div>
+            <p>Laser 785 nm &amp; Effet SERS</p>
+        </div>
+
+        <div class="chain-sep"><i class="fa-solid fa-arrow-right"></i></div>
+
+        <!-- Étape 4 : Signal Analogique -->
+        <div class="chain-card">
+            <span class="step-badge">4</span>
+            <h4>Signal Analogique</h4>
+            <div class="mini-graph analog-wave"></div>
+            <p>Spectre Raman continu $s(t)$</p>
+        </div>
+
+        <div class="chain-sep"><i class="fa-solid fa-arrow-right"></i></div>
+
+        <!-- Étape 5 : Spectromètre & CAN -->
+        <div class="chain-card highlight">
+            <span class="step-badge">5</span>
+            <h4>Spectromètre &amp; CAN</h4>
+            <div class="mini-graph dirac-wave">
+                <div class="dirac-line d1"></div>
+                <div class="dirac-line d2"></div>
+                <div class="dirac-line d3"></div>
+                <div class="dirac-line d4"></div>
+                <div class="dirac-line d5"></div>
+            </div>
+            <p>Échantillonnage (Dirac) &amp; Quantification</p>
+        </div>
+
+        <div class="chain-sep"><i class="fa-solid fa-arrow-right"></i></div>
+
+        <!-- Étape 6 : Prétraitement -->
+        <div class="chain-card">
+            <span class="step-badge">6</span>
+            <h4>Prétraitement</h4>
+            <div class="mini-graph digital-wave">
+                <span>ALS &amp; Savitzky</span>
+                <span>Normalisation</span>
+            </div>
+            <p>Filtrage du bruit et de la ligne de base</p>
+        </div>
+
+        <div class="chain-sep"><i class="fa-solid fa-arrow-right"></i></div>
+
+        <!-- Étape 7 : Traitement IA -->
+        <div class="chain-card highlight-ai">
+            <span class="step-badge">7</span>
+            <h4>Traitement IA</h4>
+            <div class="mini-graph ai-net">
+                <span>FFN (2048&rarr;512)</span>
+            </div>
+            <p>Réseau de neurones profonds</p>
+        </div>
+
+        <div class="chain-sep"><i class="fa-solid fa-arrow-right"></i></div>
+
+        <!-- Étape 8 : Diagnostic -->
+        <div class="chain-card">
+            <span class="step-badge">8</span>
+            <h4>Diagnostic</h4>
+            <div class="mini-graph diag-box-vis">
+                <span class="badge-ok">98% Normal</span>
+            </div>
+            <p>Classification (CKD vs Sain)</p>
+        </div>
+
+    </div>
+</div>
+
+<!-- GRAPHS DE COURS : CONVERSION ANALOGIQUE / NUMÉRIQUE (CAN) -->
+<div class="card margin-top">
+    <h3><i class="fa-solid fa-chart-area"></i> Représentation des Signaux (Notes de Cours &amp; CAN)</h3>
+    <p>Visualisation des étapes d'échantillonnage et de quantification du signal Raman :</p>
+
+    <div class="graphs-container">
+        <!-- Graphe 1 : Signal Analogique -->
+        <div class="graph-box">
+            <span class="graph-title">1. Signal Analogique $s(t)$</span>
+            <div class="mini-graph analog-wave"></div>
+            <span class="graph-desc">Continu dans le temps et en amplitude</span>
+        </div>
+
+        <div class="graph-arrow"><i class="fa-solid fa-arrow-right"></i></div>
+
+        <!-- Graphe 2 : Échantillonnage (Dirac) -->
+       <!-- Graphe 2 : Échantillonnage (Dirac) -->
+<div class="graph-box">
+    <span class="graph-title">2. Échantillonnage (Dirac)</span>
+    <div class="mini-graph dirac-wave">
+        <div class="dirac-line d1"></div>
+        <div class="dirac-line d2"></div>
+        <div class="dirac-line d3"></div>
+        <div class="dirac-line d4"></div>
+        <div class="dirac-line d5"></div>
+    </div>
+    <span class="graph-desc">Discrétisation temporelle s(t) &middot; p(t)</span>
+</div>
+
+        <div class="graph-arrow"><i class="fa-solid fa-arrow-right"></i></div>
+
+        <!-- Graphe 3 : Quantification & Numérisation -->
+        <div class="graph-box">
+            <span class="graph-title">3. Signal Numérique (CAN)</span>
+            <div class="mini-graph digital-wave">
+                <span>0001 0010</span>
+                <span>0101 1100</span>
+            </div>
+            <span class="graph-desc">Codage binaire (Valeurs discrètes)</span>
+        </div>
+    </div>
+</div>
+        </section>
+
+        <!-- ONGLET 3 : PIPELINE BIOINFORMATIQUE -->
+        <section id="tab-bioinfo" class="tab-page">
+            <div class="hero-banner">
+                <h2>Pipeline Bioinformatique &amp; Diagnostic Génomique</h2>
+                <p>Connexion entre le signal SERS du capteur et l'analyse transcriptomique des biomarqueurs rénaux (GEO/NCBI).</p>
+            </div>
+
+            <div class="bioinfo-flow">
+                <div class="flow-step">
+                    <div class="step-num">1</div>
+                    <h4>Capteur SERS GOAu</h4>
+                    <p>Détection physique de la créatinine dans les biofluides.</p>
+                </div>
+                <i class="fa-solid fa-chevron-right flow-arrow"></i>
+                <div class="flow-step">
+                    <div class="step-num">2</div>
+                    <h4>Deep Learning (FFN)</h4>
+                    <p>Classification spectrale et estimation de la sévérité (pM à mM).</p>
+                </div>
+                <i class="fa-solid fa-chevron-right flow-arrow"></i>
+                <div class="flow-step">
+                    <div class="step-num">3</div>
+                    <h4>Datasets Publics GEO/NCBI</h4>
+                    <p>Extraction des profils d'expression génique rénal (CKD vs Sain).</p>
+                </div>
+                <i class="fa-solid fa-chevron-right flow-arrow"></i>
+                <div class="flow-step">
+                    <div class="step-num">4</div>
+                    <h4>Biomarqueurs Cibles</h4>
+                    <p>Analyse de MT1A, MT2A, HMOX1, SOD1 (Stress oxydatif &amp; toxicité).</p>
+                </div>
+            </div>
+
+            <div class="card margin-top">
+                <h3><i class="fa-solid fa-database"></i> Script Python d'Entraînement de l'IA (Prétraitement ALS + FFN Keras)</h3>
+                <pre class="code-block"><code>import numpy as np
+import tensorflow as tf
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Dense, Dropout
+from scipy.signal import savgol_filter
+
+# 1. Prétraitement des spectres Raman (2048 wavenumbers)
+def preprocess_raman(spectrum):
+    # Lissage Savitzky-Golay &amp; Normalisation Min-Max
+    smoothed = savgol_filter(spectrum, window_length=15, polyorder=3)
+    normalized = (smoothed - np.min(smoothed)) / (np.max(smoothed) - np.min(smoothed) + 1e-8)
+    return normalized
+
+# 2. Modèle Deep Learning Feedforward Keras
+model = Sequential([
+    Dense(512, activation='relu', input_shape=(2048,)),
+    Dropout(0.3),
+    Dense(256, activation='relu'),
+    Dropout(0.3),
+    Dense(1, activation='sigmoid') # Classification binaire
+])
+
+model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
+# Exactitude obtenue sur 3124 jeux de test : 98% | LoD: 1 pM</code></pre>
+            </div>
+        </section>
+
+    </main>
+
+    <script src="app.js"></script>
+</body>
+</html>
